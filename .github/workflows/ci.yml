@@ -61,6 +61,7 @@ jobs:
     
     - name: Run unit tests
       run: |
+        pip install pytest
         pytest -s -rw tests
     
     - name: Run integration test
