@@ -722,7 +722,7 @@ def findClustersOfClusters(
         len_mnvs = {}
         total_mnvs = {}
         distances = []
-        count = 1
+        group_count = 1
         out = open(out_file, "w")
         print(
             "\t".join(
@@ -798,7 +798,7 @@ def findClustersOfClusters(
                     ):  # (pos - prev_pos) < imds_corrected[samp][regions[samp][hotspot.catch([".",".",chrom, pos], regions[samp], chromLengths, genome, imds_corrected[samp])]])):
                         distances.append(pos - prev_pos)
                         mnv_length += 1
-                        lines[i - 1] = [str(count)] + lines[i - 1]
+                        lines[i - 1] = [str(group_count)] + lines[i - 1]
                         print("\t".join([x for x in lines[i - 1]]), file=out)
                         total_muts[samp] += 1
                     else:
@@ -814,10 +814,9 @@ def findClustersOfClusters(
                         else:
                             total_mnvs[str(mnv_length)] += 1
                         mnv_length = 0
-                        lines[i - 1] = [str(count)] + lines[i - 1]
+                        lines[i - 1] = [str(group_count)] + lines[i - 1]
                         print("\t".join([x for x in lines[i - 1]]), file=out)
                         total_muts[samp] += 1
-                        count += 1
                         print("\n\n", file=out)
                 else:
                     mnv_length += 1
@@ -833,11 +832,13 @@ def findClustersOfClusters(
                         total_mnvs[str(mnv_length)] += 1
                     mnv_length = 0
 
-                    lines[i - 1] = [str(count)] + lines[i - 1]
+                    lines[i - 1] = [str(group_count)] + lines[i - 1]
                     print("\t".join([x for x in lines[i - 1]]), file=out)
                     total_muts[samp] += 1
-                    count += 1
                     print("\n\n", file=out)
+
+                group_count += 1
+
             else:
                 mnv_length += 1
                 if prev_samp not in len_mnvs:
@@ -852,15 +853,14 @@ def findClustersOfClusters(
                     total_mnvs[str(mnv_length)] += 1
                 mnv_length = 0
 
-                lines[i - 1] = [str(count)] + lines[i - 1]
+                lines[i - 1] = [str(group_count)] + lines[i - 1]
                 print("\t".join([x for x in lines[i - 1]]), file=out)
                 total_muts[samp] += 1
-                count += 1
-                count = 1
+                group_count = 1
                 print("\n\n################ New Sample #################", file=out)
                 print("\n\n", file=out)
 
-        lines[i] = [str(count)] + lines[i]
+        lines[i] = [str(group_count)] + lines[i]
         print("\t".join([x for x in lines[i]]), file=out)
         total_muts[samp] += 1
         out.close()
@@ -878,7 +878,7 @@ def findClustersOfClusters(
         distances = []
         distances_mnv = {}
         lines = []
-        count = 1
+        group_count = 1
         subclassesHeader = "\t".join(
             [
                 x
@@ -977,7 +977,7 @@ def findClustersOfClusters(
                     if len(lines) > 0:
                         if lines[-1][0] == "New":
                             lines = lines[1:]
-                            count = 1
+                            group_count = 1
                             write_out = False
                         if len(lines) == 1 or len(lines) == 0:
                             lines = []
@@ -1139,6 +1139,10 @@ def findClustersOfClusters(
                             else:
                                 writeClassIII = True
 
+                        for i in range(0, len(lines), 1):
+                            lines[i][-3] = str(group_count)
+                        group_count += 1
+
                         if writeClassII:
                             processivitySubclassification(
                                 lines, out2Y, out2K, out2S, out2N
@@ -1146,9 +1150,8 @@ def findClustersOfClusters(
                             for i in range(0, len(lines), 1):
                                 lines[i].append("ClassII")
                                 print("\t".join([x for x in lines[i]]), file=out4)
-                                lines[i] = [str(count)] + lines[i]
+                                lines[i] = [str(group_count)] + lines[i]
                                 print("\t".join([x for x in lines[i]]), file=out2)
-                            count += 1
                             print("\n\n", file=out2)
                         else:
                             if writeClassI:
@@ -1178,6 +1181,7 @@ def findClustersOfClusters(
                                     try:
                                         for i in range(0, len(lines), 1):
                                             lines[i][-1] = "ClassIA"
+
                                             print(
                                                 "\t".join([x for x in lines[i]]),
                                                 file=out6,
@@ -1189,6 +1193,7 @@ def findClustersOfClusters(
                                     try:
                                         for i in range(0, len(lines), 1):
                                             lines[i][-1] = "ClassIB"
+
                                             print(
                                                 "\t".join([x for x in lines[i]]),
                                                 file=out7,
@@ -1197,6 +1202,7 @@ def findClustersOfClusters(
                                         print(lines)
                             elif writeClassIII:
                                 # Writes Class III (all other mutations - leftovers)
+
                                 linesSubClass = lines[:]
                                 while len(linesSubClass) > 1:
                                     writeClassI = False
@@ -1487,6 +1493,11 @@ def findClustersOfClusters(
                                     for line in saveNewEvent:
                                         linesSubClass.remove(line)
 
+                                    for i in range(0, len(saveNewEvent), 1):
+                                        saveNewEvent[i][-3] = str(group_count)
+                                    group_count += 1
+
+
                                     if writeClassII:
                                         processivitySubclassification(
                                             saveNewEvent, out2Y, out2K, out2S, out2N
@@ -1498,13 +1509,12 @@ def findClustersOfClusters(
                                                 file=out4,
                                             )
                                             saveNewEvent[i] = [
-                                                str(count)
+                                                str(group_count)
                                             ] + saveNewEvent[i]
                                             print(
                                                 "\t".join([x for x in saveNewEvent[i]]),
                                                 file=out2,
                                             )
-                                        count += 1
                                         print("\n\n", file=out2)
 
                                     else:
@@ -1519,15 +1529,14 @@ def findClustersOfClusters(
                                                         ),
                                                         file=out3,
                                                     )
+
                                             except:
                                                 print(saveNewEvent)
 
                                             if writeClassIc:
                                                 # Writes Class Ic (extended MBSs)
                                                 try:
-                                                    for i in range(
-                                                        0, len(saveNewEvent), 1
-                                                    ):
+                                                    for i in range(0, len(saveNewEvent), 1):
                                                         saveNewEvent[i][-1] = "ClassIC"
                                                         print(
                                                             "\t".join(
@@ -1570,7 +1579,6 @@ def findClustersOfClusters(
                                                         0, len(saveNewEvent), 1
                                                     ):
                                                         saveNewEvent[i][-1] = "ClassIB"
-                                                        # lines[i].append(category)
                                                         print(
                                                             "\t".join(
                                                                 [
@@ -1606,6 +1614,7 @@ def findClustersOfClusters(
                                         for i in range(0, len(linesSubClass), 1):
                                             linesSubClass[i].append("ClassIII")
                                             linesSubClass[i].append(category)
+
                                             print(
                                                 "\t".join(
                                                     [x for x in linesSubClass[i]]
@@ -1922,7 +1931,7 @@ def findClustersOfClusters_noVAF(
         len_mnvs = {}
         total_mnvs = {}
         distances = []
-        count = 1
+        group_count = 1
         out = open(out_file, "w")
         with open(file) as f:
             next(f)
@@ -1973,7 +1982,7 @@ def findClustersOfClusters_noVAF(
                     ):  # (pos - prev_pos) < imds_corrected[samp][regions[samp][hotspot.catch([".",".",chrom, pos], regions[samp], chromLengths, genome, imds_corrected[samp])]])):
                         distances.append(pos - prev_pos)
                         mnv_length += 1
-                        lines[i - 1] = [str(count)] + lines[i - 1]
+                        lines[i - 1] = [str(group_count)] + lines[i - 1]
                         print("\t".join([x for x in lines[i - 1]]), file=out)
                         total_muts[samp] += 1
                     else:
@@ -1989,10 +1998,9 @@ def findClustersOfClusters_noVAF(
                         else:
                             total_mnvs[str(mnv_length)] += 1
                         mnv_length = 0
-                        lines[i - 1] = [str(count)] + lines[i - 1]
+                        lines[i - 1] = [str(group_count)] + lines[i - 1]
                         print("\t".join([x for x in lines[i - 1]]), file=out)
                         total_muts[samp] += 1
-                        count += 1
                         print("\n\n", file=out)
                 else:
                     mnv_length += 1
@@ -2008,11 +2016,11 @@ def findClustersOfClusters_noVAF(
                         total_mnvs[str(mnv_length)] += 1
                     mnv_length = 0
 
-                    lines[i - 1] = [str(count)] + lines[i - 1]
+                    lines[i - 1] = [str(group_count)] + lines[i - 1]
                     print("\t".join([x for x in lines[i - 1]]), file=out)
                     total_muts[samp] += 1
-                    count += 1
                     print("\n\n", file=out)
+                group_count += 1
             else:
                 mnv_length += 1
                 if prev_samp not in len_mnvs:
@@ -2027,15 +2035,14 @@ def findClustersOfClusters_noVAF(
                     total_mnvs[str(mnv_length)] += 1
                 mnv_length = 0
 
-                lines[i - 1] = [str(count)] + lines[i - 1]
+                lines[i - 1] = [str(group_count)] + lines[i - 1]
                 print("\t".join([x for x in lines[i - 1]]), file=out)
                 total_muts[samp] += 1
-                count += 1
-                count = 1
+                group_count = 1
                 print("\n\n################ New Sample #################", file=out)
                 print("\n\n", file=out)
 
-        lines[i] = [str(count)] + lines[i]
+        lines[i] = [str(group_count)] + lines[i]
         print("\t".join([x for x in lines[i]]), file=out)
         total_muts[samp] += 1
         out.close()
@@ -2053,7 +2060,7 @@ def findClustersOfClusters_noVAF(
         distances = []
         distances_mnv = {}
         lines = []
-        count = 1
+        group_count = 1
         subclassesHeader = "\t".join(
             [
                 x
@@ -2148,7 +2155,7 @@ def findClustersOfClusters_noVAF(
                     if len(lines) > 0:
                         if lines[-1][0] == "New":
                             lines = lines[1:]
-                            count = 1
+                            group_count = 1
                             write_out = False
                         if len(lines) == 1 or len(lines) == 0:
                             lines = []
@@ -2294,9 +2301,9 @@ def findClustersOfClusters_noVAF(
                             for i in range(0, len(lines), 1):
                                 lines[i].append("ClassII")
                                 print("\t".join([x for x in lines[i]]), file=out4)
-                                lines[i] = [str(count)] + lines[i]
+                                lines[i] = [str(group_count)] + lines[i]
                                 print("\t".join([x for x in lines[i]]), file=out2)
-                            count += 1
+                            group_count += 1
                             print("\n\n", file=out2)
                         else:
                             if writeClassI:
@@ -2488,9 +2495,9 @@ def findClustersOfClusters_noVAF(
                 for i in range(0, len(lines), 1):
                     lines[i].append("ClassII")
                     print("\t".join([x for x in lines[i]]), file=out4)
-                    lines[i] = [str(count)] + lines[i]
+                    lines[i] = [str(group_count)] + lines[i]
                     print("\t".join([x for x in lines[i]]), file=out2)
-                count += 1
+                group_count += 1
                 print("\n\n", file=out2)
             else:
                 if writeClassI:
