@@ -66,5 +66,10 @@ setup(
         "seaborn>=0.13.0",
     ],
     include_package_data=True,
+    entry_points={
+        "console_scripts": [
+            "SigProfilerClusters=SigProfilerClusters.sigprofilerclusters_cli:main_function",
+        ],
+    },
     zip_safe=False,
 )
