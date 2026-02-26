@@ -20,6 +20,15 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.14"
+      
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y poppler-utils
+      
+      - name: Upgrade pip, setuptools, and packaging
+        run: |
+          python -m pip install --upgrade pip setuptools packaging
 
       - name: Extract version from setup.py
         id: get_version
